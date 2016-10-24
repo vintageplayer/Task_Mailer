@@ -1,4 +1,4 @@
-package com.javatpoint;
+package com.SEgroup4;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -12,8 +12,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-@WebServlet("/DeleteMailServlet")
-public class DeleteMailServlet extends HttpServlet {
+@WebServlet("/ViewMailServlet")
+public class ViewMailServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		PrintWriter out=response.getWriter();
@@ -31,14 +31,16 @@ public class DeleteMailServlet extends HttpServlet {
 			
 			try{
 				Connection con=ConProvider.getConnection();
-				PreparedStatement ps=con.prepareStatement("update company_mailer_message set trash=? where id=?");
-				ps.setString(1,"yes");
-				ps.setInt(2,id);
-				int i=ps.executeUpdate();
-				if(i>0){
-					request.setAttribute("msg","Mail successfully deleted!");
-					request.getRequestDispatcher("InboxServlet").forward(request, response);
+				PreparedStatement ps=con.prepareStatement("select * from company_mailer_message where id=?");
+				ps.setInt(1,id);
+				ResultSet rs=ps.executeQuery();
+				if(rs.next()){
+					out.print("<h1>"+rs.getString("subject")+"</h1><hr/>");
+					out.print("<p><b>Message:</b><br/> "+rs.getString("message")+" <br/> <b>By: "+rs.getString("sender")+"</b></p>");
+					out.print("<p><a href='DeleteMailServlet?id="+rs.getString(1)+"'>Delete Mail</a></p>");			
+									
 				}
+				
 				con.close();
 			}catch(Exception e){out.print(e);}
 		}
@@ -49,4 +51,5 @@ public class DeleteMailServlet extends HttpServlet {
 		out.close();
 	}
 
-}
+	}
+

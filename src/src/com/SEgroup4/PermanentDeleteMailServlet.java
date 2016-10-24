@@ -1,10 +1,9 @@
-package com.javatpoint;
+package com.SEgroup4;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
@@ -13,8 +12,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-@WebServlet("/SentServlet")
-public class SentServlet extends HttpServlet {
+@WebServlet("/PermanentDeleteMailServlet")
+public class PermanentDeleteMailServlet extends HttpServlet {
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		PrintWriter out=response.getWriter();
@@ -27,20 +26,18 @@ public class SentServlet extends HttpServlet {
 		}else{
 			String email=(String)session.getAttribute("email");
 			out.print("<span style='float:right'>Hi, "+email+"</span>");
-			out.print("<h1>Sent Mail</h1>");
+			
+			int id=Integer.parseInt(request.getParameter("id"));
 			
 			try{
 				Connection con=ConProvider.getConnection();
-				PreparedStatement ps=con.prepareStatement("select * from company_mailer_message where sender=? and trash='no' order by id desc");
-				ps.setString(1,email);
-				ResultSet rs=ps.executeQuery();
-				out.print("<table border='1' style='width:700px;'>");
-				out.print("<tr style='background-color:grey;color:white'><td>To</td><td>Subject</td></tr>");
-				while(rs.next()){
-					out.print("<tr><td>"+rs.getString("receiver")+"</td><td><a href='ViewMailServlet?id="+rs.getString(1)+"'>"+rs.getString("subject")+"</a></td></tr>");
+				PreparedStatement ps=con.prepareStatement("delete from company_mailer_message where id=?");
+				ps.setInt(1,id);
+				int i=ps.executeUpdate();
+				if(i>0){
+					request.setAttribute("msg","Mail successfully deleted permanently!");
+					request.getRequestDispatcher("TrashServlet").forward(request, response);
 				}
-				out.print("</table>");
-				
 				con.close();
 			}catch(Exception e){out.print(e);}
 		}
